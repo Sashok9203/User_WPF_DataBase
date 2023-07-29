@@ -54,15 +54,16 @@ namespace WpfApp2
             }
             _ = adapter?.Fill(dataSet);
             Updated = true;
+            SelectedIndex = -1;
         }
 
         public bool IsAdmin { get; set; }
         public int PosId { get; set; } = 2;
-        
+        public int SelectedIndex { get; set; } = -1;
         public DataBase()
         {
             Load();
-            save = new((o) => { if (dataSet != null) adapter?.Update(dataSet);  Load(); }, (o) => dataSet?.HasChanges() ?? false);
+            save = new((o) => { if (dataSet != null) adapter?.Update(dataSet);  /*Load();*/ }, (o) => dataSet?.HasChanges() ?? false);//Uncomment to load the updated database after each operation
             delete = new((o) =>  DeletePosition());
         }
 
