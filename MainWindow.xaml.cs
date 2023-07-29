@@ -4,6 +4,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,21 +23,25 @@ namespace WpfApp2
     /// </summary>
     public partial class MainWindow : Window
     {
+        private bool flag = true;
+        private readonly string phonePattern = @"\(?\d{3}\)?-? *\d{3}-? *-?\d{4}";
+        private readonly string loginPattern = @"^[a-zA-Z][a-zA-Z0-9]{3,9}$";
+        private readonly string passwordPattern = @"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$";
         public MainWindow()
         {
             InitializeComponent();
         }
 
 
-        private bool flagfix = true;
+       
         private void salesGrid_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e)
         {
-            if (flagfix)
+            if (flag)
             {
                 DataGrid? dataGrid = sender as DataGrid;
                 DataRowView? row = e.Row.Item as DataRowView;
                 string? message = null;
-                flagfix = false;
+                flag = false;
                 if (e.EditAction == DataGridEditAction.Cancel) dataGrid?.CancelEdit();
                 else
                 {
@@ -47,11 +52,26 @@ namespace WpfApp2
                             message =  $"{row?.Row.Table.Columns[i].ColumnName} not be empty !!!";
                             break;
                         }
-                        if (i == 1 && !loginCheck(dataGrid, row?.Row[i].ToString()))
+                        switch (i)
                         {
-                            message = "This login allready exists !!!";
-                            break;
+                            case 1:
+                                if (!Regex.IsMatch(row?.Row[i]?.ToString(), loginPattern))
+                                    message = "Invalid login !!!\nAt least one letter or number\nEvery character from the start to the end is a letter or number\nLogin is not allowed to start with digits\nMin/max length restrictions: 3 - 9";
+                                else if (!loginCheck(dataGrid, row?.Row[i].ToString()))
+                                   message = "This login allready exists !!!";
+                                break;
+                            case 2:
+                                if (!Regex.IsMatch(row?.Row[i]?.ToString(), passwordPattern))
+                                    message = "Invalid password !!!\nAt least one upper case\nAt least one lower case letter\nAt least one digit\nAt least one special character\nMinimum eight in length 8";
+                                break;
+                            case 3:
+                                if (!Regex.IsMatch(row?.Row[i]?.ToString(), phonePattern))
+                                    message = "Invalid phone !!!\n(xxx)xxxxxxx\r\n(xxx) xxxxxxx\r\n(xxx)xxx-xxxx\r\n(xxx) xxx-xxxx\r\nxxxxxxxxxx\r\nxxx-xxx-xxxxx"; break;
                         }
+
+
+
+                        
                     }
                 }
 
@@ -59,14 +79,10 @@ namespace WpfApp2
                 {
                     dataGrid?.CancelEdit();
                     dataGrid?.Items.Refresh();
+                    MessageBox.Show(message);
                 }
-                else
-                {
-                    dataGrid?.CommitEdit();
-                    message = "The changes have been added to the database !!!";
-                }
-                MessageBox.Show(message);
-                flagfix = true;
+                else  dataGrid?.CommitEdit();
+                flag = true;
             }
         }
 

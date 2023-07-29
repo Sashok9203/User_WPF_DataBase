@@ -19,11 +19,8 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace WpfApp2
 {
     [AddINotifyPropertyChangedInterface]
-    internal class ViewMD 
+    internal class DataBase 
     {
-        
-        string pattern = new(@"^([+]?[\s0-9]+)?(\d{3}|[(]?[0-9]+[)])?([-]?[\s]?[0-9])+$");
-        
         private SqlDataAdapter? adapter, deleteAdapter;
         private DataSet? dataSet;
         private readonly string cmd = "select* from Users;select* from Positions;";
@@ -62,7 +59,7 @@ namespace WpfApp2
         public bool IsAdmin { get; set; }
         public int PosId { get; set; } = 2;
         
-        public ViewMD()
+        public DataBase()
         {
             Load();
             save = new((o) => { if (dataSet != null) adapter?.Update(dataSet);  Load(); }, (o) => dataSet?.HasChanges() ?? false);

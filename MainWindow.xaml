@@ -6,12 +6,12 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:WpfApp2"
-        d:DataContext="{d:DesignInstance Type=local:ViewMD}"
+        d:DataContext="{d:DesignInstance Type=local:DataBase}"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
 
     <Window.DataContext>
-        <local:ViewMD/>
+        <local:DataBase/>
     </Window.DataContext>
        
 
@@ -22,7 +22,7 @@
             <Button Name ="load" Width="60" Margin="20,0,0,0" Content="Delete" Command="{Binding Path=Delete}"/>
             <CheckBox Content="Admin only" Margin="20,0,0,0" IsChecked="{Binding Path=IsAdmin}" VerticalAlignment="Center"/>
         </StackPanel>
-        <DataGrid    Name="salesGrid"  Margin="4" ColumnWidth="Auto" AlternatingRowBackground ="AliceBlue"  ItemsSource="{Binding Path = Source}" AutoGenerateColumns="False" RowEditEnding ="salesGrid_RowEditEnding" >
+        <DataGrid    Name="salesGrid"  Margin="4" ColumnWidth="Auto" AlternatingRowBackground ="AliceBlue"  ItemsSource="{Binding Path = Source}" AutoGenerateColumns="False" RowEditEnding ="salesGrid_RowEditEnding">
                 <DataGrid.Columns>
                 <DataGridTextColumn Width="*" Header="Id" Binding="{Binding Path = Id}" IsReadOnly="True" />
                 <DataGridTextColumn Width="*" Header="Login" Binding="{Binding Path = Login,UpdateSourceTrigger=PropertyChanged}"/>
