@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -26,11 +27,8 @@ namespace WpfApp2
         private readonly string cmd = "select* from Users;select* from Positions;";
         private readonly RelayCommand save,delete;
         private bool Updated { get; set; }
-        
-
         private void DeletePosition()
         {
-            
             if (deleteAdapter == null)
             {
               deleteAdapter =   new("delete_positions", ConfigurationManager.ConnectionStrings["connStr"].ConnectionString);
@@ -38,8 +36,16 @@ namespace WpfApp2
             }
             deleteAdapter.SelectCommand.Parameters.Clear();
             deleteAdapter.SelectCommand.Parameters.AddWithValue("@positionId", PosId);
-            if (dataSet != null) deleteAdapter?.Fill(dataSet);
-            Load();
+            IEnumerable<DataRow>? delindexes = dataSet?.Tables[0].AsEnumerable().Where(n =>(int) n[4] == PosId).ToArray();
+            if (dataSet != null && delindexes!=null && delindexes.Any())
+            {
+                MessageBoxResult result =  MessageBox.Show($"Are you sure you want to delete {delindexes.Count()} {Positions.ElementAt(PosId)}","Delete",MessageBoxButton.YesNo) ;
+                if (result == MessageBoxResult.No) return;
+                deleteAdapter?.Fill(dataSet);
+                foreach (var rowIndex in delindexes)
+                    dataSet?.Tables[0]?.Rows.Remove(rowIndex);
+                Updated = true;
+            }
         }
 
         private void Load()
