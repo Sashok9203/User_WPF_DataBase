@@ -27,7 +27,16 @@ namespace WpfApp2
         private readonly string cmd = "select* from Users;select* from Positions;";
         private readonly RelayCommand save,delete;
         private bool Updated { get; set; }
-        private void DeletePosition()
+
+        private void dataChanged(object sender,DataRowChangeEventArgs e)
+        {
+             
+            if (dataSet != null && dataSet.HasChanges()) adapter?.Update(dataSet);
+        }
+
+     
+
+        private void DeletePositions()
         {
             if (deleteAdapter == null)
             {
@@ -41,10 +50,12 @@ namespace WpfApp2
             {
                 MessageBoxResult result =  MessageBox.Show($"Are you sure you want to delete {delindexes.Count()} {Positions.ElementAt(PosId)}","Delete",MessageBoxButton.YesNo) ;
                 if (result == MessageBoxResult.No) return;
+                dataSet.Tables[0].RowDeleted-= dataChanged;
                 deleteAdapter?.Fill(dataSet);
                 foreach (var rowIndex in delindexes)
                     dataSet?.Tables[0]?.Rows.Remove(rowIndex);
                 Updated = true;
+                dataSet.Tables[0].RowDeleted += dataChanged;
             }
         }
 
@@ -59,7 +70,9 @@ namespace WpfApp2
                 _ = new SqlCommandBuilder(adapter);
             }
             _ = adapter?.Fill(dataSet);
-            Updated = true;
+            dataSet.Tables[0].RowChanged += new(dataChanged);
+            dataSet.Tables[0].RowDeleted += new(dataChanged);
+           Updated = true;
             SelectedIndex = -1;
         }
 
@@ -70,7 +83,7 @@ namespace WpfApp2
         {
             Load();
             save = new((o) => { if (dataSet != null) adapter?.Update(dataSet);  /*Load();*/ }, (o) => dataSet?.HasChanges() ?? false);//Uncomment to load the updated database after each operation
-            delete = new((o) =>  DeletePosition());
+            delete = new((o) =>  DeletePositions());
         }
 
         public IEnumerable<string?> Positions
