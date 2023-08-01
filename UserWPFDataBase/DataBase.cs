@@ -22,19 +22,28 @@ namespace WpfApp2
     [AddINotifyPropertyChangedInterface]
     internal class DataBase 
     {
+        private bool flag = true;
+        private readonly string phonePattern = @"\(?\d{3}\)?-? *\d{3}-? *-?\d{4}";
+        private readonly string loginPattern = @"^[a-zA-Z][a-zA-Z0-9]{3,9}$";
+        private readonly string passwordPattern = @"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$";
         private SqlDataAdapter? adapter, deleteAdapter;
         private DataSet? dataSet;
         private readonly string cmd = "select* from Users;select* from Positions;";
-        private readonly RelayCommand save,delete;
+        private readonly RelayCommand delete;
         private bool Updated { get; set; }
 
         private void dataChanged(object sender,DataRowChangeEventArgs e)
         {
-             
-            if (dataSet != null && dataSet.HasChanges()) adapter?.Update(dataSet);
+            if (e.Action == DataRowAction.Delete)
+            {
+                MessageBoxResult result = MessageBox.Show($"Are you sure you want to delete ?", "Delete", MessageBoxButton.YesNo);
+                if (result == MessageBoxResult.No) return;
+            }
+            else if ((e.Action == DataRowAction.Add || e.Action == DataRowAction.Change) && dataSet != null && dataSet.HasChanges())
+               adapter?.Update(dataSet);
         }
+        
 
-     
 
         private void DeletePositions()
         {
@@ -48,14 +57,14 @@ namespace WpfApp2
             IEnumerable<DataRow>? delindexes = dataSet?.Tables[0].AsEnumerable().Where(n =>(int) n[4] == PosId).ToArray();
             if (dataSet != null && delindexes!=null && delindexes.Any())
             {
-                MessageBoxResult result =  MessageBox.Show($"Are you sure you want to delete {delindexes.Count()} {Positions.ElementAt(PosId)}","Delete",MessageBoxButton.YesNo) ;
+                MessageBoxResult result =  MessageBox.Show($"Are you sure you want to delete {delindexes.Count()} {Positions.ElementAt(PosId)} ?","Delete",MessageBoxButton.YesNo) ;
                 if (result == MessageBoxResult.No) return;
-                dataSet.Tables[0].RowDeleted-= dataChanged;
+                dataSet.Tables[0].RowDeleting -= dataChanged;
                 deleteAdapter?.Fill(dataSet);
                 foreach (var rowIndex in delindexes)
                     dataSet?.Tables[0]?.Rows.Remove(rowIndex);
                 Updated = true;
-                dataSet.Tables[0].RowDeleted += dataChanged;
+                dataSet.Tables[0].RowDeleting += dataChanged;
             }
         }
 
@@ -71,7 +80,7 @@ namespace WpfApp2
             }
             _ = adapter?.Fill(dataSet);
             dataSet.Tables[0].RowChanged += new(dataChanged);
-            dataSet.Tables[0].RowDeleted += new(dataChanged);
+            dataSet.Tables[0].RowDeleting += new(dataChanged);
            Updated = true;
             SelectedIndex = -1;
         }
@@ -82,7 +91,6 @@ namespace WpfApp2
         public DataBase()
         {
             Load();
-            save = new((o) => { if (dataSet != null) adapter?.Update(dataSet);  /*Load();*/ }, (o) => dataSet?.HasChanges() ?? false);//Uncomment to load the updated database after each operation
             delete = new((o) =>  DeletePositions());
         }
 
@@ -108,7 +116,6 @@ namespace WpfApp2
             }
         }
 
-        public ICommand Update => save;
         public ICommand Delete => delete;
     }
 }

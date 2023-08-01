@@ -31,7 +31,7 @@ namespace WpfApp2
         {
             InitializeComponent();
         }
-     
+
         private void salesGrid_RowEditEnding(object sender, DataGridRowEditEndingEventArgs e)
         {
             if (flag)
@@ -47,7 +47,7 @@ namespace WpfApp2
                     {
                         if (string.IsNullOrWhiteSpace(row?[i].ToString()))
                         {
-                            message =  $"{row?.Table.Columns[i].ColumnName} not be empty !!!";
+                            message = $"{row?.Table.Columns[i].ColumnName} not be empty !!!";
                             break;
                         }
                         switch (i)
@@ -56,7 +56,7 @@ namespace WpfApp2
                                 if (!Regex.IsMatch(row?[i]?.ToString() ?? string.Empty, loginPattern))
                                     message = $"Invalid login \"{row?[i]?.ToString()}\" !!!\nAt least one letter or number\nEvery character from the start to the end is a letter or number\nLogin is not allowed to start with digits\nMin/max length restrictions: 3 - 9";
                                 else if (!loginCheck(dataGrid, row?[i].ToString()))
-                                   message = "This login allready exists !!!";
+                                    message = "This login allready exists !!!";
                                 break;
                             case 2:
                                 if (!Regex.IsMatch(row?[i]?.ToString() ?? string.Empty, passwordPattern))
@@ -75,12 +75,12 @@ namespace WpfApp2
                     dataGrid?.Items.Refresh();
                     MessageBox.Show(message);
                 }
-                else  dataGrid?.CommitEdit();
+                else dataGrid?.CommitEdit();
                 flag = true;
             }
         }
 
-        private bool loginCheck(DataGrid? data,string? login)
+        private bool loginCheck(DataGrid? data, string? login)
         {
             int count = 0;
             foreach (var item in data.Items)
@@ -89,11 +89,11 @@ namespace WpfApp2
                 if (row?["Login"].ToString() == login) count++;
                 if (count > 1) return false;
             }
-            return true; 
+            return true;
         }
 
-        
 
-       
+
+
     }
 }
