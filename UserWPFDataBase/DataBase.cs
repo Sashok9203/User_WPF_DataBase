@@ -109,7 +109,7 @@ namespace WpfApp2
 
         private void DeletePositions()
         {
-            IEnumerable<DataRow>? delindexes = dataSet?.Tables[0].AsEnumerable().Where(n =>(int) n[4] == PosId).ToArray();
+            IEnumerable<DataRow>? delindexes = dataSet?.Tables[0].AsEnumerable().Where(n =>(int) n["PositionId"] == PosId).ToArray();
             if (dataSet != null && delindexes!=null && delindexes.Any())
             {
                 MessageBoxResult result =  MessageBox.Show($"Are you sure you want to delete {delindexes.Count()} {Positions.ElementAt(PosId)} ?","Delete",MessageBoxButton.YesNo) ;
