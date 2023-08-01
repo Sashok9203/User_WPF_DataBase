@@ -53,7 +53,7 @@ namespace WpfApp2
                 cancelDelete = result == MessageBoxResult.No;
                 return;
             }
-            else if ((e.Action != DataRowAction.Add && e.Action != DataRowAction.Change) || (this.dataSet != null && !this.dataSet.HasChanges())) return;
+            else if ((e.Action != DataRowAction.Add && e.Action != DataRowAction.Change) || (dataSet != null && !dataSet.HasChanges())) return;
             DataRow? row = e.Row;
             string? message = null;
             for (int i = 1; i <= 5; i++)
@@ -92,10 +92,9 @@ namespace WpfApp2
         private bool loginCheck(DataSet? data, string? login)
         {
             int count = 0;
-            foreach (var item in data.Tables[0].Rows)
+            foreach (DataRow item in data.Tables[0].Rows)
             {
-                DataRow? row = (item as DataRowView)?.Row;
-                if (row?["Login"].ToString() == login) count++;
+                if (item["Login"].ToString() == login) count++;
                 if (count > 1) return false;
             }
             return true;
@@ -104,13 +103,6 @@ namespace WpfApp2
 
         private void DeletePositions()
         {
-            if (deleteAdapter == null)
-            {
-              deleteAdapter =   new("delete_positions", ConfigurationManager.ConnectionStrings["connStr"].ConnectionString);
-              deleteAdapter.SelectCommand.CommandType = CommandType.StoredProcedure;
-            }
-            deleteAdapter.SelectCommand.Parameters.Clear();
-            deleteAdapter.SelectCommand.Parameters.AddWithValue("@positionId", PosId);
             IEnumerable<DataRow>? delindexes = dataSet?.Tables[0].AsEnumerable().Where(n =>(int) n[4] == PosId).ToArray();
             if (dataSet != null && delindexes!=null && delindexes.Any())
             {
@@ -124,6 +116,14 @@ namespace WpfApp2
                 Updated = true;
                 dataSet.Tables[0].RowDeleting += dataChanged;
                 dataSet.Tables[0].RowDeleted += rowDeleted;
+
+                if (deleteAdapter == null)
+                {
+                    deleteAdapter = new("delete_positions", ConfigurationManager.ConnectionStrings["connStr"].ConnectionString);
+                    deleteAdapter.SelectCommand.CommandType = CommandType.StoredProcedure;
+                }
+                deleteAdapter.SelectCommand.Parameters.Clear();
+                deleteAdapter.SelectCommand.Parameters.AddWithValue("@positionId", PosId);
             }
         }
 
