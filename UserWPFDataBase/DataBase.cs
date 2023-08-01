@@ -46,7 +46,7 @@ namespace WpfApp2
             }
         }
 
-        private void dataChanged(object sender, DataRowChangeEventArgs e)
+        private void rowDeleting(object sender, DataRowChangeEventArgs e)
         {
             if (e.Action == DataRowAction.Delete && !multyDelete)
             {
@@ -54,7 +54,11 @@ namespace WpfApp2
                 cancelDelete = result == MessageBoxResult.No;
                 return;
             }
-            else if ((e.Action != DataRowAction.Add && e.Action != DataRowAction.Change) || (dataSet != null && !dataSet.HasChanges())) return;
+        }
+
+        private void dataChanged(object sender, DataRowChangeEventArgs e)
+        {
+            if ((e.Action != DataRowAction.Add && e.Action != DataRowAction.Change) || (dataSet != null && !dataSet.HasChanges())) return;
             DataRow? row = e.Row;
             string? message = null;
             for (int i = 1; i <= 5; i++)
@@ -138,7 +142,7 @@ namespace WpfApp2
             }
             _ = adapter?.Fill(dataSet);
             dataSet.Tables[0].RowChanged += new(dataChanged);
-            dataSet.Tables[0].RowDeleting += new(dataChanged);
+            dataSet.Tables[0].RowDeleting += new(rowDeleting);
             dataSet.Tables[0].RowDeleted += new(rowDeleted);
             Updated = true;
             SelectedIndex = -1;
