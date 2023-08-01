@@ -30,7 +30,7 @@ namespace WpfApp2
         private readonly string cmd = "select* from Users;select* from Positions;";
         private readonly RelayCommand delete;
         private bool Updated { get; set; }
-        private bool cancelDelete;
+        private bool cancelDelete,multyDelete;
 
         private void rowDeleted(object sender, DataRowChangeEventArgs e)
         {
@@ -40,12 +40,12 @@ namespace WpfApp2
                 return;
             }
 
-            if (dataSet != null) adapter?.Update(dataSet);
+            if (dataSet != null && ! multyDelete) adapter?.Update(dataSet);
         }
 
         private void dataChanged(object sender, DataRowChangeEventArgs e)
         {
-            if (e.Action == DataRowAction.Delete)
+            if (e.Action == DataRowAction.Delete && !multyDelete)
             {
                 MessageBoxResult result = MessageBox.Show($"Are you sure you want to delete ?", "Delete", MessageBoxButton.YesNo);
                 cancelDelete = result == MessageBoxResult.No;
@@ -107,14 +107,11 @@ namespace WpfApp2
             {
                 MessageBoxResult result =  MessageBox.Show($"Are you sure you want to delete {delindexes.Count()} {Positions.ElementAt(PosId)} ?","Delete",MessageBoxButton.YesNo) ;
                 if (result == MessageBoxResult.No) return;
-                dataSet.Tables[0].RowDeleting -= dataChanged;
-                dataSet.Tables[0].RowDeleted -= rowDeleted;
+                multyDelete = true;
                 foreach (var rowIndex in delindexes)
                     dataSet?.Tables[0]?.Rows.Remove(rowIndex);
                 Updated = true;
-                dataSet.Tables[0].RowDeleting += dataChanged;
-                dataSet.Tables[0].RowDeleted += rowDeleted;
-
+                multyDelete = false;
                 if (deleteAdapter == null)
                 {
                     deleteAdapter = new("delete_positions", ConfigurationManager.ConnectionStrings["connStr"].ConnectionString);
