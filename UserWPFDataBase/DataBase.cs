@@ -25,22 +25,25 @@ namespace WpfApp2
         private readonly string phonePattern = @"\(?\d{3}\)?-? *\d{3}-? *-?\d{4}";
         private readonly string loginPattern = @"^[a-zA-Z][a-zA-Z0-9]{3,26}$";
         private readonly string passwordPattern = @"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,}$";
+        private readonly string cmd = "select* from Users;select* from Positions;";
         private SqlDataAdapter? adapter, deleteAdapter;
         private DataSet? dataSet;
-        private readonly string cmd = "select* from Users;select* from Positions;";
         private readonly RelayCommand delete;
         private bool Updated { get; set; }
         private bool cancelDelete,multyDelete;
 
         private void rowDeleted(object sender, DataRowChangeEventArgs e)
         {
-            if (cancelDelete)
+            if (!multyDelete)
             {
-                e.Row.RejectChanges();
-                return;
-            }
+                if (cancelDelete)
+                {
+                    e.Row.RejectChanges();
+                    return;
+                }
 
-            if (dataSet != null && ! multyDelete) adapter?.Update(dataSet);
+                if (dataSet != null) adapter?.Update(dataSet);
+            }
         }
 
         private void dataChanged(object sender, DataRowChangeEventArgs e)
