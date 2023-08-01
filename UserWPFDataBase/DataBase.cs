@@ -40,7 +40,7 @@ namespace WpfApp2
                 return;
             }
 
-            adapter?.Update(this.dataSet);
+            if (dataSet != null) adapter?.Update(dataSet);
         }
 
         private void dataChanged(object sender, DataRowChangeEventArgs e)
@@ -83,18 +83,19 @@ namespace WpfApp2
                 e.Row.RejectChanges();
                 MessageBox.Show(message);
             }
-            else adapter?.Update(this.dataSet);
+            else if(dataSet != null) adapter?.Update(dataSet);
 
         }
 
         private bool loginCheck(DataSet? data, string? login)
         {
             int count = 0;
-            foreach (DataRow item in data.Tables[0].Rows)
-            {
-                if (item["Login"].ToString() == login) count++;
-                if (count > 1) return false;
-            }
+            if (data != null) 
+                foreach (DataRow item in data.Tables[0].Rows)
+                {
+                    if (item["Login"].ToString() == login) count++;
+                    if (count > 1) return false;
+                }
             return true;
         }
 
