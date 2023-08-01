@@ -34,7 +34,6 @@ namespace WpfApp2
 
         private void rowDeleted(object sender, DataRowChangeEventArgs e)
         {
-
             if (cancelDelete)
             {
                 e.Row.RejectChanges();
@@ -42,7 +41,6 @@ namespace WpfApp2
             }
 
             adapter?.Update(this.dataSet);
-
         }
 
         private void dataChanged(object sender, DataRowChangeEventArgs e)
@@ -60,7 +58,7 @@ namespace WpfApp2
             {
                 if (string.IsNullOrWhiteSpace(row?[i].ToString()))
                 {
-                    message = $"{row?.Table.Columns[i].ColumnName} not be empty !!!";
+                    message = $"{row?.Table.Columns[i].ColumnName} must not be empty !!!";
                     break;
                 }
                 switch (i)
@@ -77,7 +75,7 @@ namespace WpfApp2
                         break;
                     case 3:
                         if (!Regex.IsMatch(row?[i]?.ToString() ?? string.Empty, phonePattern))
-                            message = $"Invalid phone \"{row?[i]?.ToString()}\"!!!\n(xxx)xxxxxxx\r\n(xxx) xxxxxxx\r\n(xxx)xxx-xxxx\r\n(xxx) xxx-xxxx\r\nxxxxxxxxxx\r\nxxx-xxx-xxxxx"; break;
+                            message = $"Invalid phone \"{row?[i]?.ToString()}\"!!!\nMust be:\n(xxx)xxxxxxx\r\n(xxx) xxxxxxx\r\n(xxx)xxx-xxxx\r\n(xxx) xxx-xxxx\r\nxxxxxxxxxx\r\nxxx-xxx-xxxxx"; break;
                 }
             }
             if (message != null)
@@ -141,7 +139,6 @@ namespace WpfApp2
             dataSet.Tables[0].RowChanged += new(dataChanged);
             dataSet.Tables[0].RowDeleting += new(dataChanged);
             dataSet.Tables[0].RowDeleted += new(rowDeleted);
-            Updated = true;
             Updated = true;
             SelectedIndex = -1;
         }
