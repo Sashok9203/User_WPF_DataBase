@@ -16,12 +16,19 @@
        
 
     <DockPanel>
-        <StackPanel  DockPanel.Dock="Top"  Margin="4" Orientation="Horizontal">
-            <Label Content="Position to delete"/>
-            <ComboBox Name ="positions"  ItemsSource="{Binding Path=Positions}" SelectedIndex="{Binding Path = PosId}"/>
-            <Button Name ="load" Width="60" Margin="20,0,0,0" Content="Delete" Command="{Binding Path=Delete}"/>
-            <CheckBox Content="Admin only" Margin="20,0,0,0" IsChecked="{Binding Path=IsAdmin}" VerticalAlignment="Center"/>
-        </StackPanel>
+        <DockPanel DockPanel.Dock="Top">
+            <StackPanel  DockPanel.Dock="Left"  Margin="4" Orientation="Horizontal">
+                <Label Content="Position to delete"/>
+                <ComboBox Name ="positions"  ItemsSource="{Binding Path=Positions}" SelectedIndex="{Binding Path = PosId}"/>
+                <Button Name ="load" Width="60" Margin="20,0,0,0" Content="Delete" Command="{Binding Path=Delete}"/>
+                <CheckBox Content="Admin only" Margin="20,0,0,0" IsChecked="{Binding Path=IsAdmin}" VerticalAlignment="Center"/>
+            </StackPanel>
+            <Button DockPanel.Dock="Right" Width="25" Height="25" HorizontalAlignment="Right" Margin="0,0,5,0"  Command="{Binding Path= Update}" ToolTip="Reload from database" >
+                <Button.Background>
+                    <ImageBrush ImageSource="/icons8-повторение-100.png"/>
+                </Button.Background>
+            </Button>
+        </DockPanel>
         <DataGrid  Margin="4" ColumnWidth="Auto" AlternatingRowBackground ="AliceBlue"  ItemsSource="{Binding Path = Source}" AutoGenerateColumns="False" SelectedIndex="{Binding Path=SelectedIndex,Mode=TwoWay}">
                 <DataGrid.Columns>
                 <DataGridTextColumn Width="*" Header="Id" Binding="{Binding Path = Id}" IsReadOnly="True" />

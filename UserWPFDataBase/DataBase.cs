@@ -28,37 +28,30 @@ namespace WpfApp2
         private readonly string cmd = "select* from Users;select* from Positions;";
         private SqlDataAdapter? adapter, deleteAdapter;
         private DataSet? dataSet;
-        private readonly RelayCommand delete;
-        private bool Updated { get; set; }
-        private bool cancelDelete,multyDelete;
+        private readonly RelayCommand delete,update;
+        private bool cancelDelete,multyDelete,multyLoad;
 
         private void rowDeleted(object sender, DataRowChangeEventArgs e)
         {
             if (!multyDelete)
             {
-                if (cancelDelete)
-                {
-                    e.Row.RejectChanges();
-                    return;
-                }
-
-                if (dataSet != null) adapter?.Update(dataSet);
+                if (cancelDelete) e.Row.RejectChanges();
+                else if (dataSet != null) adapter?.Update(dataSet);
             }
         }
 
         private void rowDeleting(object sender, DataRowChangeEventArgs e)
         {
-            if (e.Action == DataRowAction.Delete && !multyDelete)
+            if (!multyDelete)
             {
                 MessageBoxResult result = MessageBox.Show($"Are you sure you want to delete ?", "Delete", MessageBoxButton.YesNo);
                 cancelDelete = result == MessageBoxResult.No;
-                return;
             }
         }
 
         private void dataChanged(object sender, DataRowChangeEventArgs e)
         {
-            if ((e.Action != DataRowAction.Add && e.Action != DataRowAction.Change) || (dataSet != null && !dataSet.HasChanges())) return;
+            if (multyLoad || (e.Action != DataRowAction.Add && e.Action != DataRowAction.Change)) return;
             DataRow? row = e.Row;
             string? message = null;
             for (int i = 1; i <= 5; i++)
@@ -117,7 +110,6 @@ namespace WpfApp2
                 multyDelete = true;
                 foreach (var rowIndex in delindexes)
                     dataSet?.Tables[0]?.Rows.Remove(rowIndex);
-                Updated = true;
                 multyDelete = false;
                 if (deleteAdapter == null)
                 {
@@ -132,30 +124,33 @@ namespace WpfApp2
 
         private void Load()
         {
-          
             dataSet ??= new DataSet();
+            multyDelete = true;
             dataSet.Clear();
+            multyDelete = false;
             if (adapter == null)
             {
                 adapter = new SqlDataAdapter(cmd, ConfigurationManager.ConnectionStrings["connStr"].ConnectionString);
                 _ = new SqlCommandBuilder(adapter);
             }
+            multyLoad = true;
             _ = adapter?.Fill(dataSet);
-            dataSet.Tables[0].RowChanged += new(dataChanged);
+            multyLoad = false;
+            dataSet.Tables[0].RowChanged  += new(dataChanged);
             dataSet.Tables[0].RowDeleting += new(rowDeleting);
-            dataSet.Tables[0].RowDeleted += new(rowDeleted);
-            Updated = true;
+            dataSet.Tables[0].RowDeleted  += new(rowDeleted);
             SelectedIndex = -1;
         }
 
         public bool IsAdmin { get; set; }
-        public int PosId { get; set; } = 2;
-        public int SelectedIndex { get; set; } = -1;
+        public int  PosId { get; set; } = 2;
+        public int  SelectedIndex { get; set; } = -1;
 
         public DataBase()
         {
             Load();
             delete = new((o) =>  DeletePositions());
+            update = new((o) =>  Load());
         }
 
         public IEnumerable<string?> Positions
@@ -168,12 +163,11 @@ namespace WpfApp2
             }
         }
 
-        [DependsOn( "Updated","IsAdmin")]
+        [DependsOn( "IsAdmin")]
         public DataView? Source
         {
             get
             {
-                Updated = false;
                 DataView? view =  dataSet?.Tables[0].DefaultView;
                 if(view!= null) view.RowFilter = IsAdmin ? "PositionId = 0" : "";
                 return view;
@@ -181,5 +175,6 @@ namespace WpfApp2
         }
 
         public ICommand Delete => delete;
+        public ICommand Update => update;
     }
 }
