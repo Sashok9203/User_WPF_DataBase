@@ -110,7 +110,6 @@ namespace WpfApp2
                 if (result == MessageBoxResult.No) return;
                 dataSet.Tables[0].RowDeleting -= dataChanged;
                 dataSet.Tables[0].RowDeleted -= rowDeleted;
-                deleteAdapter?.Fill(dataSet);
                 foreach (var rowIndex in delindexes)
                     dataSet?.Tables[0]?.Rows.Remove(rowIndex);
                 Updated = true;
@@ -124,6 +123,7 @@ namespace WpfApp2
                 }
                 deleteAdapter.SelectCommand.Parameters.Clear();
                 deleteAdapter.SelectCommand.Parameters.AddWithValue("@positionId", PosId);
+                deleteAdapter?.Fill(dataSet);
             }
         }
 
