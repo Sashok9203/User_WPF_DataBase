@@ -30,7 +30,7 @@ namespace WpfApp2
         private readonly string cmd = "select* from Users;select* from Positions;";
         private readonly RelayCommand delete;
         private bool Updated { get; set; }
-        private bool cancelDelete = false;
+        private bool cancelDelete;
 
         private void rowDeleted(object sender, DataRowChangeEventArgs e)
         {
