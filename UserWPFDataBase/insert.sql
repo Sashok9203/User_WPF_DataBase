@@ -5,7 +5,7 @@ insert into [Positions] (Position) values  ('Moderator');
 insert into [Positions] (Position) values  ('User');
 go
 
-insert into Users (Login, Password, Phone, PositionId, Addres) values ('mbirchill0', 'kK5.BJzIrUk>', '843-179-1942', 0, '4 Schiller Center');
+insert into Users (Login, Password, Phone, PositionId, Addres) values ('mbirchill0', 'kK5.BJzIr%Uk>', '843-179-1942', 0, '4 Schiller Center');
 insert into Users (Login, Password, Phone, PositionId, Addres) values ('njeary1', 'yR0|x??}%o4?0b?%', '919-460-4830', 1, '0577 Waxwing Drive');
 insert into Users (Login, Password, Phone, PositionId, Addres) values ('fpeers2', 'bS9$B/,u*G', '438-473-5241', 0, '36 Logan Park');
 insert into Users (Login, Password, Phone, PositionId, Addres) values ('tcartin3', 'hH0#(&30{z!mn}', '367-105-6497', 1, '70 1st Terrace');

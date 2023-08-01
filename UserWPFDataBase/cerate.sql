@@ -17,7 +17,7 @@ create table [Users]
   [Id] int not null primary key identity,
   [Login] nvarchar(56) not null check([Login]<>'') unique,
   [Password] nvarchar(56) not null check([Password]<>''),
-  [Phone] nvarchar(16) null check([Phone]<>''),
+  [Phone] nvarchar(18) null check([Phone]<>''),
   [PositionId] int not null references [Positions](Id),
   [Addres] nvarchar(256) not null check([Addres]<>'')
 );

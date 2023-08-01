@@ -23,8 +23,8 @@ namespace WpfApp2
     internal class DataBase
     {
         private readonly string phonePattern = @"\(?\d{3}\)?-? *\d{3}-? *-?\d{4}";
-        private readonly string loginPattern = @"^[a-zA-Z][a-zA-Z0-9]{3,9}$";
-        private readonly string passwordPattern = @"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$";
+        private readonly string loginPattern = @"^[a-zA-Z][a-zA-Z0-9]{3,26}$";
+        private readonly string passwordPattern = @"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,}$";
         private SqlDataAdapter? adapter, deleteAdapter;
         private DataSet? dataSet;
         private readonly string cmd = "select* from Users;select* from Positions;";
@@ -65,17 +65,17 @@ namespace WpfApp2
                 {
                     case 1:
                         if (!Regex.IsMatch(row?[i]?.ToString() ?? string.Empty, loginPattern))
-                            message = $"Invalid login \"{row?[i]?.ToString()}\" !!!\nAt least one letter or number\nEvery character from the start to the end is a letter or number\nLogin is not allowed to start with digits\nMin/max length restrictions: 3 - 9";
+                            message = $"Invalid login \"{row?[i]?.ToString()}\" !!!\nAt least one letter or number\nEvery character from the start to the end is a letter or number\nLogin is not allowed to start with digits\nMin/max length restrictions: 3 - 26";
                         else if (!loginCheck(dataSet, row?[i].ToString()))
                             message = "This login allready exists !!!";
                         break;
                     case 2:
                         if (!Regex.IsMatch(row?[i]?.ToString() ?? string.Empty, passwordPattern))
-                            message = $"Invalid password \"{row?[i]?.ToString()}\" !!!\nAt least one upper case\nAt least one lower case letter\nAt least one digit\nAt least one special character\nMinimum eight in length 8";
+                            message = $"Invalid password \"{row?[i]?.ToString()}\" !!!\nAt least one upper case\nAt least one lower case letter\nAt least one digit\nAt least one special character\nMinimum eight in length 6";
                         break;
                     case 3:
                         if (!Regex.IsMatch(row?[i]?.ToString() ?? string.Empty, phonePattern))
-                            message = $"Invalid phone \"{row?[i]?.ToString()}\"!!!\nMust be:\n(xxx)xxxxxxx\r\n(xxx) xxxxxxx\r\n(xxx)xxx-xxxx\r\n(xxx) xxx-xxxx\r\nxxxxxxxxxx\r\nxxx-xxx-xxxxx"; break;
+                            message = $"Invalid phone number \"{row?[i]?.ToString()}\" !!!\nMust be:\n(xxx)xxxxxxx\r\n(xxx) xxxxxxx\r\n(xxx)xxx-xxxx\r\n(xxx) xxx-xxxx\r\nxxxxxxxxxx\r\nxxx-xxx-xxxxx"; break;
                 }
             }
             if (message != null)
