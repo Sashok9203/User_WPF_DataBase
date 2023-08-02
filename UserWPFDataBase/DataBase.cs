@@ -37,18 +37,27 @@ namespace WpfApp2
     internal class DataBase
     {
         private readonly string phonePattern = @"\(?\d{3}\)?-? *\d{3}-? *-?\d{4}";
+
         private readonly string loginPattern = @"^[a-zA-Z][a-zA-Z0-9]{3,26}$";
+
         private readonly string passwordPattern = @"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,}$";
+
         private readonly string cmd = "select* from Users;select* from Positions;";
+
         private readonly SqlDataAdapter adapter, deleteAdapter;
+
         private readonly RelayCommand delete,update,fChange;
+
         private bool cancelDelete,multyDelete,multyLoad;
+
         private readonly List<Filter> filters;
+
         private readonly DataSet dataSet;
+
         private DataView View => dataSet.Tables[0].DefaultView;
        
-
         public int PosId { get; set; } = 2;
+
         public int SelectedIndex { get; set; } = -1;
        
         private void rowDeleted(object sender, DataRowChangeEventArgs e)
@@ -119,7 +128,6 @@ namespace WpfApp2
             return true;
         }
 
-
         private void DeletePositions()
         {
             IEnumerable<DataRow>? delindexes = dataSet.Tables[0].AsEnumerable().Where(n =>(int) n["PositionId"] == PosId).ToArray();
@@ -146,7 +154,6 @@ namespace WpfApp2
             View.RowFilter = filter;
         }
     
-
         private void Load()
         {
             multyDelete = true;
@@ -178,7 +185,6 @@ namespace WpfApp2
                 filters.Add(new(true, pos));
         }
 
-
         public IEnumerable<string> Positions
         {
             get
@@ -189,11 +195,14 @@ namespace WpfApp2
             }
         }
 
-        
         public DataView Source => View;
+
         public IEnumerable<Filter> Filters => filters;
+
         public ICommand Delete => delete;
+
         public ICommand Update => update;
+
         public ICommand FChanged => fChange;
     }
 }
