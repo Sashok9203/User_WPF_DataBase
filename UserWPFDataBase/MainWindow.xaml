@@ -13,19 +13,29 @@
     <Window.DataContext>
         <local:DataBase/>
     </Window.DataContext>
-       
+    
+    <Window.Resources>
+        <DataTemplate x:Key="FilterItemTemplate">
+            <CheckBox Content="{Binding DataContext.Content, RelativeSource={RelativeSource Mode=TemplatedParent}}" IsChecked="{Binding DataContext.IsChecked, RelativeSource={RelativeSource Mode=TemplatedParent},Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Command="{Binding DataContext.FChanged, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
+        </DataTemplate>
+    </Window.Resources>
 
     <DockPanel>
         <DockPanel DockPanel.Dock="Top">
             <StackPanel  DockPanel.Dock="Left"  Margin="4" Orientation="Horizontal">
                 <Label Content="Position to delete"/>
                 <ComboBox Name ="positions"  ItemsSource="{Binding Path=Positions}" SelectedIndex="{Binding Path = PosId}"/>
-                <Button Name ="load" Width="60" Margin="20,0,0,0" Content="Delete" Command="{Binding Path=Delete}"/>
-                <CheckBox Content="Admin only" Margin="20,0,0,0" IsChecked="{Binding Path=IsAdmin}" VerticalAlignment="Center"/>
+                <Button  Width="60" Margin="20,0,0,0" Content="Delete" Command="{Binding Path=Delete}"/>
             </StackPanel>
             <Button DockPanel.Dock="Right" Width="25" Height="25" HorizontalAlignment="Right" Margin="0,0,5,0"  Command="{Binding Path= Update}" ToolTip="Reload from database" BorderBrush="{x:Null}" Background="{x:Null}"  >
                 <Image  Source="icons8-повторение-100.png"/>
             </Button>
+            <ToggleButton  DockPanel.Dock="Right" Margin="0,0,5,0" Name="btnFilter" Width="20" Height="20" BorderBrush="{x:Null}" Background="{x:Null}" >
+                 <Image  Source="/free-icon-filter-5760377.png"/>
+            </ToggleButton>
+            <Popup PlacementTarget="{Binding ElementName=btnFilter}" Placement="Bottom" StaysOpen="false" IsOpen="{Binding ElementName=btnFilter, Path= IsChecked}">
+                <ListBox ItemsSource="{Binding Filters}" ItemTemplate="{StaticResource FilterItemTemplate}" />
+            </Popup>
         </DockPanel>
         <DataGrid  Margin="4" ColumnWidth="Auto" AlternatingRowBackground ="AliceBlue"  ItemsSource="{Binding Path = Source}" AutoGenerateColumns="False" SelectedIndex="{Binding Path=SelectedIndex,Mode=TwoWay}">
                 <DataGrid.Columns>

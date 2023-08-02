@@ -3,9 +3,11 @@ using Microsoft.Data.SqlClient;
 using PropertyChanged;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -19,17 +21,33 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace WpfApp2
 {
+    public class Filter
+    {
+        public bool IsChecked { get; set; }
+        public string Content { get; init; }
+        public Filter(bool isChecked, string pos)
+        {
+            IsChecked = isChecked;
+            Content = pos;
+        }
+    }
+
+
     [AddINotifyPropertyChangedInterface]
     internal class DataBase
     {
+        
+
         private readonly string phonePattern = @"\(?\d{3}\)?-? *\d{3}-? *-?\d{4}";
         private readonly string loginPattern = @"^[a-zA-Z][a-zA-Z0-9]{3,26}$";
         private readonly string passwordPattern = @"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,}$";
         private readonly string cmd = "select* from Users;select* from Positions;";
         private SqlDataAdapter? adapter, deleteAdapter;
         private DataSet? dataSet;
-        private readonly RelayCommand delete,update;
+        DataView? view;
+        private readonly RelayCommand delete,update,fChanged;
         private bool cancelDelete,multyDelete,multyLoad;
+        private List<Filter> filters;
 
         private void rowDeleted(object sender, DataRowChangeEventArgs e)
         {
@@ -122,6 +140,18 @@ namespace WpfApp2
             }
         }
 
+        private void fSet()
+        {
+            string filter = "PositionId = -1";
+            for (int i = 0; i < filters.Count; i++)
+            {
+                if (filters[i].IsChecked)
+                   filter += $"  or  PositionId = {i}";
+            }
+            view.RowFilter = filter;
+        }
+    
+
         private void Load()
         {
             dataSet ??= new DataSet();
@@ -142,8 +172,8 @@ namespace WpfApp2
             SelectedIndex = -1;
         }
 
-        public bool IsAdmin { get; set; }
         public int  PosId { get; set; } = 2;
+     //   public int  FPosId { get; set; } = 0;
         public int  SelectedIndex { get; set; } = -1;
 
         public DataBase()
@@ -151,30 +181,37 @@ namespace WpfApp2
             Load();
             delete = new((o) =>  DeletePositions());
             update = new((o) =>  Load());
+            fChanged = new((o) => fSet());
+            filters = new List<Filter>();
+            foreach (string pos in Positions)
+                filters.Add(new(true, pos));
         }
 
-        public IEnumerable<string?> Positions
+        public IEnumerable<Filter> Filters => filters;
+
+        public IEnumerable<string> Positions
         {
             get
             {
                 DataRowCollection? dr = dataSet?.Tables[1]?.Rows;
                 for (int i = 0; i < dr?.Count; i++)
-                     yield return dr[i].ItemArray[1]?.ToString();
+                     yield return dr[i]?.ItemArray[1]?.ToString() ?? "";
             }
         }
 
-        [DependsOn( "IsAdmin")]
+      //  [DependsOn(  "FPosId")]
         public DataView? Source
         {
             get
             {
-                DataView? view =  dataSet?.Tables[0].DefaultView;
-                if(view!= null) view.RowFilter = IsAdmin ? "PositionId = 0" : "";
+                view =  dataSet?.Tables[0].DefaultView;
+                // if(view!= null) view.RowFilter = FPosId != 0 ? $"PositionId = {FPosId -1}" : "";
                 return view;
             }
         }
 
         public ICommand Delete => delete;
         public ICommand Update => update;
+        public ICommand FChanged => fChanged;
     }
 }
