@@ -36,25 +36,26 @@ namespace WpfApp2
     [AddINotifyPropertyChangedInterface]
     internal class DataBase
     {
-        
-
         private readonly string phonePattern = @"\(?\d{3}\)?-? *\d{3}-? *-?\d{4}";
         private readonly string loginPattern = @"^[a-zA-Z][a-zA-Z0-9]{3,26}$";
         private readonly string passwordPattern = @"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,}$";
         private readonly string cmd = "select* from Users;select* from Positions;";
-        private SqlDataAdapter? adapter, deleteAdapter;
-        private DataSet? dataSet;
-        DataView? view;
-        private readonly RelayCommand delete,update,fChanged;
+        private readonly SqlDataAdapter adapter, deleteAdapter;
+        private readonly DataSet dataSet;
+        private readonly DataView view;
+        private readonly RelayCommand delete,update,fChange;
         private bool cancelDelete,multyDelete,multyLoad;
-        private List<Filter> filters;
+        private readonly List<Filter> filters;
+
+        public int PosId { get; set; } = 2;
+        public int SelectedIndex { get; set; } = -1;
 
         private void rowDeleted(object sender, DataRowChangeEventArgs e)
         {
             if (!multyDelete)
             {
                 if (cancelDelete) e.Row.RejectChanges();
-                else if (dataSet != null) adapter?.Update(dataSet);
+                else  adapter.Update(dataSet);
             }
         }
 
@@ -70,7 +71,7 @@ namespace WpfApp2
         private void dataChanged(object sender, DataRowChangeEventArgs e)
         {
             if (multyLoad || (e.Action != DataRowAction.Add && e.Action != DataRowAction.Change)) return;
-            DataRow? row = e.Row;
+            DataRow row = e.Row;
             string? message = null;
             for (int i = 1; i <= 5; i++)
             {
@@ -101,70 +102,56 @@ namespace WpfApp2
                 e.Row.RejectChanges();
                 MessageBox.Show(message);
             }
-            else if(dataSet != null) adapter?.Update(dataSet);
+            else  adapter.Update(dataSet);
 
         }
 
-        private bool loginCheck(DataSet? data, string? login)
+        private bool loginCheck(DataSet data, string? login)
         {
             int count = 0;
-            if (data != null) 
-                foreach (DataRow item in data.Tables[0].Rows)
-                {
-                    if (item["Login"].ToString() == login) count++;
-                    if (count > 1) return false;
-                }
+            foreach (DataRow item in data.Tables[0].Rows)
+            {
+                if (item["Login"].ToString() == login) count++;
+                if (count > 1) return false;
+            }
             return true;
         }
 
 
         private void DeletePositions()
         {
-            IEnumerable<DataRow>? delindexes = dataSet?.Tables[0].AsEnumerable().Where(n =>(int) n["PositionId"] == PosId).ToArray();
-            if (dataSet != null && delindexes!=null && delindexes.Any())
+            IEnumerable<DataRow>? delindexes = dataSet.Tables[0].AsEnumerable().Where(n =>(int) n["PositionId"] == PosId).ToArray();
+            if (delindexes!=null && delindexes.Any())
             {
                 MessageBoxResult result =  MessageBox.Show($"Are you sure you want to delete {delindexes.Count()} {Positions.ElementAt(PosId)} ?","Delete",MessageBoxButton.YesNo) ;
                 if (result == MessageBoxResult.No) return;
                 multyDelete = true;
                 foreach (var rowIndex in delindexes)
-                    dataSet?.Tables[0]?.Rows.Remove(rowIndex);
+                    dataSet.Tables[0]?.Rows.Remove(rowIndex);
                 multyDelete = false;
-                if (deleteAdapter == null)
-                {
-                    deleteAdapter = new("delete_positions", ConfigurationManager.ConnectionStrings["connStr"].ConnectionString);
-                    deleteAdapter.SelectCommand.CommandType = CommandType.StoredProcedure;
-                }
                 deleteAdapter.SelectCommand.Parameters.Clear();
                 deleteAdapter.SelectCommand.Parameters.AddWithValue("@positionId", PosId);
-                deleteAdapter?.Fill(dataSet);
+                deleteAdapter.Fill(dataSet);
             }
         }
 
-        private void fSet()
+        private void filterSet()
         {
             string filter = "PositionId = -1";
             for (int i = 0; i < filters.Count; i++)
-            {
                 if (filters[i].IsChecked)
                    filter += $"  or  PositionId = {i}";
-            }
             view.RowFilter = filter;
         }
     
 
         private void Load()
         {
-            dataSet ??= new DataSet();
             multyDelete = true;
             dataSet.Clear();
             multyDelete = false;
-            if (adapter == null)
-            {
-                adapter = new SqlDataAdapter(cmd, ConfigurationManager.ConnectionStrings["connStr"].ConnectionString);
-                _ = new SqlCommandBuilder(adapter);
-            }
             multyLoad = true;
-            _ = adapter?.Fill(dataSet);
+            _ = adapter.Fill(dataSet);
             multyLoad = false;
             dataSet.Tables[0].RowChanged  += new(dataChanged);
             dataSet.Tables[0].RowDeleting += new(rowDeleting);
@@ -172,46 +159,39 @@ namespace WpfApp2
             SelectedIndex = -1;
         }
 
-        public int  PosId { get; set; } = 2;
-     //   public int  FPosId { get; set; } = 0;
-        public int  SelectedIndex { get; set; } = -1;
-
         public DataBase()
         {
+            string connStr = ConfigurationManager.ConnectionStrings["connStr"].ConnectionString;
+            dataSet = new DataSet();
+            adapter = new SqlDataAdapter(cmd, connStr);
+            _ = new SqlCommandBuilder(adapter);
+            deleteAdapter = new("delete_positions", connStr);
+            deleteAdapter.SelectCommand.CommandType = CommandType.StoredProcedure;
+            delete = new((o) => DeletePositions());
+            update = new((o) => Load());
+            fChange = new((o) => filterSet());
             Load();
-            delete = new((o) =>  DeletePositions());
-            update = new((o) =>  Load());
-            fChanged = new((o) => fSet());
-            filters = new List<Filter>();
+            filters = new();
             foreach (string pos in Positions)
                 filters.Add(new(true, pos));
+            view = dataSet.Tables[0].DefaultView;
         }
 
-        public IEnumerable<Filter> Filters => filters;
 
         public IEnumerable<string> Positions
         {
             get
             {
-                DataRowCollection? dr = dataSet?.Tables[1]?.Rows;
+                DataRowCollection? dr = dataSet.Tables[1]?.Rows;
                 for (int i = 0; i < dr?.Count; i++)
                      yield return dr[i]?.ItemArray[1]?.ToString() ?? "";
             }
         }
 
-      //  [DependsOn(  "FPosId")]
-        public DataView? Source
-        {
-            get
-            {
-                view =  dataSet?.Tables[0].DefaultView;
-                // if(view!= null) view.RowFilter = FPosId != 0 ? $"PositionId = {FPosId -1}" : "";
-                return view;
-            }
-        }
-
+        public IEnumerable<Filter> Filters => filters;
+        public DataView Source => view;
         public ICommand Delete => delete;
         public ICommand Update => update;
-        public ICommand FChanged => fChanged;
+        public ICommand FChanged => fChange;
     }
 }
