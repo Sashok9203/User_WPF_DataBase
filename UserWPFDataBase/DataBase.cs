@@ -80,21 +80,22 @@ namespace WpfApp2
                     message = $"{row?.Table.Columns[i].ColumnName} must not be empty !!!";
                     break;
                 }
+                string rowStr = row?[i]?.ToString() ?? string.Empty;
                 switch (i)
                 {
                     case 1:
-                        if (!Regex.IsMatch(row?[i]?.ToString() ?? string.Empty, loginPattern))
-                            message = $"Invalid login \"{row?[i]?.ToString()}\" !!!\nAt least one letter or number\nEvery character from the start to the end is a letter or number\nLogin is not allowed to start with digits\nMin/max length restrictions: 3 - 26";
-                        else if (!loginCheck(dataSet, row?[i].ToString()))
-                            message = $"Login \"{row?[i]?.ToString()}\" allready exists !!!";
+                        if (!Regex.IsMatch(rowStr, loginPattern))
+                            message = $"Invalid login \"{rowStr}\" !!!\nAt least one letter or number\nEvery character from the start to the end is a letter or number\nLogin is not allowed to start with digits\nMin/max length restrictions: 3 - 26";
+                        else if (!loginCheck(rowStr))
+                            message = $"Login \"{rowStr}\" allready exists !!!";
                         break;
                     case 2:
-                        if (!Regex.IsMatch(row?[i]?.ToString() ?? string.Empty, passwordPattern))
-                            message = $"Invalid password \"{row?[i]?.ToString()}\" !!!\nAt least one upper case\nAt least one lower case letter\nAt least one digit\nAt least one special character\nMinimum eight in length 6";
+                        if (!Regex.IsMatch(rowStr, passwordPattern))
+                            message = $"Invalid password \"{rowStr}\" !!!\nAt least one upper case\nAt least one lower case letter\nAt least one digit\nAt least one special character\nMinimum eight in length 6";
                         break;
                     case 3:
-                        if (!Regex.IsMatch(row?[i]?.ToString() ?? string.Empty, phonePattern))
-                            message = $"Invalid phone number \"{row?[i]?.ToString()}\" !!!\nMust be:\n(xxx)xxxxxxx\r\n(xxx) xxxxxxx\r\n(xxx)xxx-xxxx\r\n(xxx) xxx-xxxx\r\nxxxxxxxxxx\r\nxxx-xxx-xxxxx"; break;
+                        if (!Regex.IsMatch(rowStr, phonePattern))
+                            message = $"Invalid phone number \"{rowStr}\" !!!\nMust be:\n(xxx)xxxxxxx\r\n(xxx) xxxxxxx\r\n(xxx)xxx-xxxx\r\n(xxx) xxx-xxxx\r\nxxxxxxxxxx\r\nxxx-xxx-xxxxx"; break;
                 }
             }
             if (message != null)
@@ -106,10 +107,10 @@ namespace WpfApp2
 
         }
 
-        private bool loginCheck(DataSet data, string? login)
+        private bool loginCheck(string? login)
         {
             int count = 0;
-            foreach (DataRow item in data.Tables[0].Rows)
+            foreach (DataRow item in dataSet.Tables[0].Rows)
             {
                 if (item["Login"].ToString() == login) count++;
                 if (count > 1) return false;
@@ -167,8 +168,8 @@ namespace WpfApp2
             _ = new SqlCommandBuilder(adapter);
             deleteAdapter = new("delete_positions", connStr);
             deleteAdapter.SelectCommand.CommandType = CommandType.StoredProcedure;
-            delete = new((o) => DeletePositions());
-            update = new((o) => Load());
+            delete  = new((o) => DeletePositions());
+            update  = new((o) => Load());
             fChange = new((o) => filterSet());
             Load();
             filters = new();
