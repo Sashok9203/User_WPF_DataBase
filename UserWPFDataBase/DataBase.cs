@@ -41,15 +41,16 @@ namespace WpfApp2
         private readonly string passwordPattern = @"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,}$";
         private readonly string cmd = "select* from Users;select* from Positions;";
         private readonly SqlDataAdapter adapter, deleteAdapter;
-        private readonly DataSet dataSet;
-        private readonly DataView view;
         private readonly RelayCommand delete,update,fChange;
         private bool cancelDelete,multyDelete,multyLoad;
         private readonly List<Filter> filters;
+        private readonly DataSet dataSet;
+        private DataView View => dataSet.Tables[0].DefaultView;
+       
 
         public int PosId { get; set; } = 2;
         public int SelectedIndex { get; set; } = -1;
-
+       
         private void rowDeleted(object sender, DataRowChangeEventArgs e)
         {
             if (!multyDelete)
@@ -142,7 +143,7 @@ namespace WpfApp2
             for (int i = 0; i < filters.Count; i++)
                 if (filters[i].IsChecked)
                    filter += $"  or  PositionId = {i}";
-            view.RowFilter = filter;
+            View.RowFilter = filter;
         }
     
 
@@ -154,9 +155,6 @@ namespace WpfApp2
             multyLoad = true;
             _ = adapter.Fill(dataSet);
             multyLoad = false;
-            dataSet.Tables[0].RowChanged  += new(dataChanged);
-            dataSet.Tables[0].RowDeleting += new(rowDeleting);
-            dataSet.Tables[0].RowDeleted  += new(rowDeleted);
             SelectedIndex = -1;
         }
 
@@ -173,9 +171,11 @@ namespace WpfApp2
             fChange = new((o) => filterSet());
             Load();
             filters = new();
+            dataSet.Tables[0].RowChanged += dataChanged;
+            dataSet.Tables[0].RowDeleting += rowDeleting;
+            dataSet.Tables[0].RowDeleted += rowDeleted;
             foreach (string pos in Positions)
                 filters.Add(new(true, pos));
-            view = dataSet.Tables[0].DefaultView;
         }
 
 
@@ -189,8 +189,9 @@ namespace WpfApp2
             }
         }
 
+        
+        public DataView Source => View;
         public IEnumerable<Filter> Filters => filters;
-        public DataView Source => view;
         public ICommand Delete => delete;
         public ICommand Update => update;
         public ICommand FChanged => fChange;
