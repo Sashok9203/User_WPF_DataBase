@@ -19,7 +19,7 @@
             
             <StackPanel  DockPanel.Dock="Left"  Margin="4" Orientation="Horizontal">
                 <Label Content="Position to delete"/>
-                <ComboBox Name ="positions"  ItemsSource="{Binding Path=Positions}" SelectedIndex="{Binding Path = PosId}"/>
+                <ComboBox Name ="positions"  ItemsSource="{Binding Path=Positions,Mode=OneTime}" SelectedIndex="{Binding Path = PosId}"/>
                 <Button  Width="60" Margin="20,0,0,0" Content="Delete" Command="{Binding Path=Delete}"/>
             </StackPanel>
             
@@ -35,9 +35,9 @@
                 <ListBox ItemsSource="{Binding Filters}">
                     <ListBox.ItemTemplate>
                         <DataTemplate >
-                            <CheckBox Content="{Binding DataContext.Content, RelativeSource={RelativeSource Mode=TemplatedParent}}" 
+                            <CheckBox Content="{Binding DataContext.Content, RelativeSource={RelativeSource Mode=TemplatedParent} ,Mode=OneTime}" 
                                       IsChecked="{Binding DataContext.IsChecked, RelativeSource={RelativeSource Mode=TemplatedParent},Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
-                                      Command="{Binding DataContext.FChanged, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
+                                      Command="{Binding DataContext.FChanged, RelativeSource={RelativeSource AncestorType={x:Type Window}},Mode=OneTime}"/>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -54,7 +54,7 @@
                 <DataGridTemplateColumn Width="*" Header="Position">
                     <DataGridTemplateColumn.CellTemplate >
                         <DataTemplate>
-                            <ComboBox ItemsSource="{Binding ElementName = positions , Path = ItemsSource}" SelectedIndex ="{Binding Path = PositionId , Mode =  TwoWay ,UpdateSourceTrigger=PropertyChanged}"/>
+                            <ComboBox ItemsSource="{Binding ElementName = positions , Path = ItemsSource,Mode=OneTime}" SelectedIndex ="{Binding Path = PositionId , Mode =  TwoWay ,UpdateSourceTrigger=PropertyChanged}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

@@ -86,7 +86,7 @@ namespace WpfApp2
                         if (!Regex.IsMatch(row?[i]?.ToString() ?? string.Empty, loginPattern))
                             message = $"Invalid login \"{row?[i]?.ToString()}\" !!!\nAt least one letter or number\nEvery character from the start to the end is a letter or number\nLogin is not allowed to start with digits\nMin/max length restrictions: 3 - 26";
                         else if (!loginCheck(dataSet, row?[i].ToString()))
-                            message = "This login allready exists !!!";
+                            message = $"Login \"{row?[i]?.ToString()}\" allready exists !!!";
                         break;
                     case 2:
                         if (!Regex.IsMatch(row?[i]?.ToString() ?? string.Empty, passwordPattern))
