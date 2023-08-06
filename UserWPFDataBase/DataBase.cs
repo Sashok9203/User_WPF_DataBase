@@ -130,18 +130,18 @@ namespace WpfApp2
 
         private void DeletePositions()
         {
-            IEnumerable<DataRow>? delindexes = dataSet.Tables[0].AsEnumerable().Where(n =>(int) n["PositionId"] == PosId).ToArray();
-            if (delindexes!=null && delindexes.Any())
+            IEnumerable<DataRow>? rowsTodelete = dataSet.Tables[0].AsEnumerable().Where(n =>(int) n["PositionId"] == PosId).ToArray();
+            if (rowsTodelete!=null && rowsTodelete.Any())
             {
-                MessageBoxResult result =  MessageBox.Show($"Are you sure you want to delete {delindexes.Count()} {Positions.ElementAt(PosId)} ?","Delete",MessageBoxButton.YesNo) ;
+                MessageBoxResult result =  MessageBox.Show($"Are you sure you want to delete {rowsTodelete.Count()} {Positions.ElementAt(PosId)} ?","Delete",MessageBoxButton.YesNo) ;
                 if (result == MessageBoxResult.No) return;
                 multyDelete = true;
-                foreach (var rowIndex in delindexes)
-                    dataSet.Tables[0]?.Rows.Remove(rowIndex);
+                foreach (var row in rowsTodelete)
+                    dataSet.Tables[0]?.Rows.Remove(row);
                 multyDelete = false;
-                deleteAdapter.SelectCommand.Parameters.Clear();
                 deleteAdapter.SelectCommand.Parameters.AddWithValue("@positionId", PosId);
                 deleteAdapter.Fill(dataSet);
+                deleteAdapter.SelectCommand.Parameters.Clear();
             }
         }
 
@@ -177,10 +177,10 @@ namespace WpfApp2
             update  = new((o) => Load());
             fChange = new((o) => filterSet());
             Load();
-            filters = new();
             dataSet.Tables[0].RowChanged += dataChanged;
             dataSet.Tables[0].RowDeleting += rowDeleting;
             dataSet.Tables[0].RowDeleted += rowDeleted;
+            filters = new();
             foreach (string pos in Positions)
                 filters.Add(new(true, pos));
         }
