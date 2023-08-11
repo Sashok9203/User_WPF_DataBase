@@ -44,9 +44,9 @@ namespace WpfApp2
 
         private readonly string cmd = "select* from Users;select* from Positions;";
 
-        private readonly SqlDataAdapter adapter, deleteAdapter;
+        private readonly RelayCommand? delete, update, fChanged;
 
-        private readonly RelayCommand delete,update,fChange;
+        private readonly SqlDataAdapter adapter, deleteAdapter;
 
         private bool cancelDelete,multyDelete,multyLoad;
 
@@ -165,6 +165,8 @@ namespace WpfApp2
             SelectedIndex = -1;
         }
 
+       
+
         public DataBase()
         {
             string connStr = ConfigurationManager.ConnectionStrings["connStr"].ConnectionString;
@@ -173,9 +175,6 @@ namespace WpfApp2
             _ = new SqlCommandBuilder(adapter);
             deleteAdapter = new("delete_positions", connStr);
             deleteAdapter.SelectCommand.CommandType = CommandType.StoredProcedure;
-            delete  = new((o) => DeletePositions());
-            update  = new((o) => Load());
-            fChange = new((o) => filterSet());
             Load();
             dataSet.Tables[0].RowChanged += dataChanged;
             dataSet.Tables[0].RowDeleting += rowDeleting;
@@ -199,10 +198,11 @@ namespace WpfApp2
 
         public IEnumerable<Filter> Filters => filters;
 
-        public ICommand Delete => delete;
+        public RelayCommand Delete => delete ?? new((o) => DeletePositions());
+        public RelayCommand Update => update ?? new((o) => Load());
+        public RelayCommand FChanged => fChanged ?? new((o) => filterSet());
 
-        public ICommand Update => update;
 
-        public ICommand FChanged => fChange;
+
     }
 }
